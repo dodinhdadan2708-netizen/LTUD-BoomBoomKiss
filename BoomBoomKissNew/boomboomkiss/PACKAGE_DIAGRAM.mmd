@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph MODEL[boomboomkiss.model]
+        MAIN[Main / GameUi / IconCatalog]
+        GAME[Game / Player / GameState]
+        BOARD[Board / Cell / SafeCell / BoomCell / KissCell]
+        DATA[Position / AttackResult / Theme / CellType]
+        MAIN --> GAME
+        GAME --> BOARD
+        BOARD --> DATA
+    end
+    subgraph CONFIG[boomboomkiss.config]
+        LIMITS[GameConfig]
+    end
+    subgraph REPOSITORY[boomboomkiss.repository]
+        PORT[ThemeRepository]
+        FILE[FileThemeRepository]
+        MEMORY[MemoryThemeRepository]
+        FILE -. implements .-> PORT
+        MEMORY -. implements .-> PORT
+    end
+    GAME -->|inject ThemeRepository| PORT
+    MAIN -->|create at application entry| FILE
+    BOARD --> LIMITS
+    FILE -->|load / save Theme| DATA
