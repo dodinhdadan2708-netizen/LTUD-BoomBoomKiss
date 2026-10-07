@@ -1,0 +1,145 @@
+classDiagram
+    direction TB
+
+    class JFrame
+
+    class Main {
+        -Game game
+        -ThemeRepository themeRepository
+        -Theme theme
+        +main(String[] args) void$
+        -showMenu() void
+        -showSetup() void
+        -showPlay() void
+        -attack(Position position) void
+        -showGameOver() void
+    }
+
+    class Game {
+        ~Player player1
+        ~Player player2
+        ~Player currentPlayer
+        ~Player loser
+        ~GameState state
+        ~restart() void
+        ~setupPlayer() Player
+        ~confirmSetup() void
+        ~opponent() Player
+        ~attack(Position position) AttackResult
+        ~switchTurn() void
+        ~getWinner() Player
+    }
+
+    class GameState {
+        <<enumeration>>
+        SETUP_PLAYER_1
+        SETUP_PLAYER_2
+        PLAYING
+        GAME_OVER
+    }
+
+    class Player {
+        ~String name
+        ~Board board
+    }
+
+    class Board {
+        -Cell[][] cells
+        -Random random
+        ~clear() void
+        ~getCell(Position position) Cell
+        ~count(CellType type) int
+        ~remaining(CellType type) int
+        ~place(Position position, CellType type) boolean
+        ~remove(Position position) void
+        ~isSetupComplete() boolean
+        ~randomize(Random random) void
+        ~reveal(Position target) AttackResult
+    }
+
+    class GameConfig {
+        <<utility>>
+        ~int BOARD_SIZE = 5$
+        ~int BOMB_COUNT = 2$
+        ~int KISS_COUNT = 1$
+    }
+
+    class Cell {
+        <<abstract>>
+        ~Position position
+        -boolean revealed
+        ~isRevealed() boolean
+        ~reveal() void
+        ~getType() CellType
+    }
+
+    class SafeCell {
+        ~getType() CellType
+    }
+
+    class BombCell {
+        ~getType() CellType
+    }
+
+    class KissCell {
+        ~getType() CellType
+    }
+
+    class CellType {
+        <<enumeration>>
+        SAFE
+        BOMB
+        KISS
+    }
+
+    class Position {
+        ~int row
+        ~int column
+    }
+
+    class AttackResult {
+        ~List~Position~ opened
+        ~boolean kissHit
+    }
+
+    class Theme {
+        ~String safeIcon
+        ~String boomIcon
+        ~String kissIcon
+        ~String loseText
+        ~iconFor(CellType type) String
+        ~setIcon(CellType type, String icon) void
+    }
+
+    class ThemeRepository {
+        <<interface>>
+        +load() Theme
+        +save(Theme theme) void
+    }
+
+    class FileThemeRepository {
+        -Path path
+        +load() Theme
+        +save(Theme theme) void
+    }
+
+    JFrame <|-- Main
+    Cell <|-- SafeCell
+    Cell <|-- BombCell
+    Cell <|-- KissCell
+    ThemeRepository <|.. FileThemeRepository
+
+    Main "1" *-- "1" Game : runs
+    Main --> Theme : edits
+    Main --> ThemeRepository : loads/saves
+    Game "1" *-- "2" Player : owns
+    Game --> GameState : state
+    Game ..> AttackResult : returns
+    Player "1" *-- "1" Board : owns
+    Board "1" *-- "25" Cell : contains
+    Board ..> GameConfig : uses
+    Board ..> CellType : places/counts
+    Board ..> AttackResult : returns
+    Cell "1" *-- "1" Position : has
+    Cell ..> CellType : returns
+    FileThemeRepository ..> Theme : persists
