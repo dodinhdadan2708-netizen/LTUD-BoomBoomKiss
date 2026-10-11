@@ -3,9 +3,9 @@ setlocal
 cd /d "%~dp0"
 if not exist "build\classes" mkdir "build\classes"
 if not exist "dist" mkdir "dist"
-javac -encoding UTF-8 -source 8 -target 8 -d "build\classes" Board.java Cell.java Game.java GameConfig.java GameUi.java IconCatalog.java Main.java Position.java Theme.java
+javac -encoding UTF-8 -source 8 -target 8 -d "build\classes" config\*.java repository\*.java model\AttackResult.java model\Board.java model\Cell.java model\CellType.java model\Game.java model\GameUi.java model\IconCatalog.java model\Main.java model\Position.java model\Theme.java model\UiFonts.java model\RoundedButton.java model\PlaceholderField.java
 if errorlevel 1 goto failed
-jar cfe "dist\BoomBoomKiss.jar" boomboomkiss.Main -C "build\classes" boomboomkiss
+jar cfe "dist\BoomBoomKiss.jar" boomboomkiss.model.Main -C "build\classes" boomboomkiss -C . resources
 if errorlevel 1 goto failed
 echo Build thanh cong: dist\BoomBoomKiss.jar
 exit /b 0

@@ -1,19 +1,18 @@
 @startuml
+' Source: ban-ke-su-that.md, current-source snapshot 2026-10-11.
 left to right direction
 skinparam shadowing false
 actor "Người chơi\n(Người 1 / Người 2)" as Player
 rectangle "Boom Boom Kiss" {
-  usecase "UC01\nTùy chỉnh theme" as Theme
-  usecase "UC02\nBắt đầu ván" as Start
-  usecase "UC03\nĐặt bánh và xác nhận" as Setup
-  usecase "Kiểm tra số bánh" as Validate
-  usecase "Che bàn khi chuyển máy" as Cover
-  usecase "UC04\nĐặt ngẫu nhiên" as Random
-  usecase "UC05\nMở ô đối thủ" as Attack
-  usecase "Xử lý ô và luật nổ" as Resolve
-  usecase "UC06\nXem kết quả" as Result
-  usecase "UC07\nChơi lại" as Again
-  usecase "UC08\nVề trang chủ" as Home
+  usecase "UC-01\nTùy chỉnh theme" as Theme
+  usecase "UC-02\nBắt đầu ván" as Start
+  usecase "UC-03\nĐặt bánh và xác nhận" as Setup
+  usecase "UC-04\nĐặt ngẫu nhiên" as Random
+  usecase "UC-05\nMở ô đối thủ" as Attack
+  usecase "UC-06\nXem kết quả" as Result
+  usecase "UC-07\nChơi lại" as Again
+  usecase "UC-08\nVề trang chủ" as Home
+  usecase "UC-09\nThoát trò chơi" as Exit
 }
 Player -- Theme
 Player -- Start
@@ -23,9 +22,12 @@ Player -- Attack
 Player -- Result
 Player -- Again
 Player -- Home
-Setup ..> Validate : <<include>>
-Setup ..> Cover : <<include>>
+Player -- Exit
 Random ..> Setup : <<extend>>\nChọn Ngẫu nhiên
-Attack ..> Resolve : <<include>>
 Result ..> Attack : <<extend>>\nKiss bị mở
+note right of Theme
+  Đổi icon và hình phạt: lưu theme.
+  Đổi nhãn: chỉ trong phiên UI.
+  Không thay loại bánh hoặc luật chơi.
+end note
 @enduml
