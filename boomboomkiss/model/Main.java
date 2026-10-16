@@ -15,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -353,11 +355,18 @@ public class Main extends JFrame {
         title.setIcon(IconCatalog.icon(theme.iconFor(CellType.SAFE),18)); title.setIconTextGap(6);
         title.setAlignmentX(LEFT_ALIGNMENT); card.add(title); gap(card,6);
         card.add(ruleLine(new CellType[] {CellType.BOOM,CellType.BOOM,CellType.KISS},
-                "Mỗi bàn giấu 2 " + sessionLabels.get(CellType.BOOM) + " và 1 " + sessionLabels.get(CellType.KISS)));
+                "Mỗi bàn giấu 2 " + ruleLabel(CellType.BOOM) + " và 1 " + ruleLabel(CellType.KISS)));
         gap(card,6);
-        card.add(ruleLine(new CellType[] {CellType.KISS}, "Mở trúng " + sessionLabels.get(CellType.KISS) +
+        card.add(ruleLine(new CellType[] {CellType.KISS}, "Mở trúng " + ruleLabel(CellType.KISS) +
                 ", trực tiếp hoặc do nổ lan, là thua"));
         card.revalidate(); card.repaint();
+    }
+
+    private String ruleLabel(CellType type) {
+        String value = sessionLabels.get(type);
+        // Bound the summary only; the editable session label retains its full value.
+        int count = value.codePointCount(0, value.length());
+        return count <= 10 ? value : value.substring(0, value.offsetByCodePoints(0, 9)) + "…";
     }
 
     private JPanel ruleLine(CellType[] icons, String text) {
@@ -641,24 +650,38 @@ public class Main extends JFrame {
         root.setFocusCycleRoot(true);
         Card result = new Card(Color.WHITE, 32);
         result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
-        result.setBorder(BorderFactory.createEmptyBorder(24, 26, 24, 26));
+        boolean compact = getHeight() < 740;
+        result.setBorder(BorderFactory.createEmptyBorder(compact ? 16 : 24, 26, compact ? 16 : 24, 26));
         Card circle = new Card(new Color(251,228,235), 120);
         circle.setLayout(new FlowLayout(FlowLayout.CENTER, 12,12));
-        circle.add(new JLabel(IconCatalog.icon(theme.iconFor(CellType.KISS), 76)));
-        circle.setMaximumSize(new Dimension(105,105)); circle.setPreferredSize(new Dimension(105,105));
-        circle.setAlignmentX(CENTER_ALIGNMENT); result.add(circle); gap(result, 16);
-        result.add(wrapped("BOOM! Bạn đã trúng Kiss!", 245, UiFonts.Role.HEADING, RED)); gap(result, 10);
+        circle.add(new JLabel(IconCatalog.icon(theme.iconFor(CellType.KISS), compact ? 52 : 76)));
+        int circleSize = compact ? 80 : 105;
+        circle.setMaximumSize(new Dimension(circleSize,circleSize)); circle.setPreferredSize(new Dimension(circleSize,circleSize));
+        circle.setAlignmentX(CENTER_ALIGNMENT); result.add(circle); gap(result, compact ? 10 : 16);
+        result.add(wrapped("BOOM! Bạn đã trúng Kiss!", 245, UiFonts.Role.HEADING, RED)); gap(result, compact ? 6 : 10);
         result.add(label("Người " + (game.getLoser() == game.getPlayer1() ? "1" : "2") + " thua.", UiFonts.Role.LABEL, INK));
         gap(result, 6);
         result.add(label("Người " + (game.getWinner() == game.getPlayer1() ? "1" : "2") + " thắng!", UiFonts.Role.BODY, INK));
-        gap(result, 25);
+        gap(result, compact ? 12 : 25);
         Card action = new Card(new Color(255, 244, 211), 21);
         action.setLayout(new BoxLayout(action, BoxLayout.Y_AXIS));
         action.setBorder(BorderFactory.createEmptyBorder(16, 10, 16, 10));
         action.add(label("HÌNH PHẠT", UiFonts.Role.CAPTION, INK));
-        gap(action, 9); action.add(wrapped(theme.getLoseText(), 250, UiFonts.Role.BODY, INK));
+        gap(action, 9);
+        JTextArea punishment = new JTextArea(theme.getLoseText());
+        punishment.setFont(UiFonts.BODY); punishment.setForeground(INK);
+        punishment.setEditable(false); punishment.setLineWrap(true); punishment.setWrapStyleWord(true);
+        punishment.setOpaque(false); punishment.setBorder(null); punishment.setCaretPosition(0);
+        punishment.getAccessibleContext().setAccessibleName("Nội dung hình phạt");
+        JScrollPane punishmentScroll = new JScrollPane(punishment,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        punishmentScroll.setBorder(null); punishmentScroll.setOpaque(false);
+        punishmentScroll.getViewport().setOpaque(false);
+        punishmentScroll.setPreferredSize(new Dimension(250, theme.getLoseText().length() > 80 ? 72 : 36));
+        punishmentScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        punishmentScroll.setAlignmentX(CENTER_ALIGNMENT); action.add(punishmentScroll);
         action.setMaximumSize(new Dimension(Integer.MAX_VALUE, 190)); result.add(action);
-        gap(result, 20);
+        gap(result, compact ? 12 : 20);
         GameUi.Button again = button("Chơi lại", GREEN, () -> { stopAnimation(); game.restart(); showSetup(); });
         result.add(again);
         gap(result, 10); result.add(button("Về trang chủ", INK, this::showMenu));
